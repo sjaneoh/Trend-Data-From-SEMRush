@@ -1,0 +1,44 @@
+KeywordMagicTool1.csv <- read.csv("KeywordMagicTool1.csv")
+KeywordMagicTool2.csv <- read.csv("KeywordMagicTool2.csv")
+KeywordMagicTool3.csv <- read.csv("KeywordMagicTool3.csv")
+KeywordMagicTool4.csv <- read.csv("KeywordMagicTool4.csv")
+
+
+CSVList <- list(KeywordMagicTool1.csv, KeywordMagicTool2.csv, KeywordMagicTool3.csv, KeywordMagicTool4.csv)
+
+CategoryName <- list("CategoryName1", "CategoryName2", "CategoryName3", "CategoryName4")
+
+for(i in 1:4){  
+  CSVListLoop<- CSVList[[i]]
+  CategoryName<-CategoryName[[i]]
+
+
+  FindSumOfTrend<- sqldf('SELECT *,(CAST(leftstr(Trend, 4) as float)+ CAST(substr(Trend, 6, 4) as float)+ CAST(substr(Trend, 11, 4) as float)+ CAST(substr(Trend, 16, 4) as float)+ CAST(substr(Trend, 21, 4) as float)+ CAST(substr(Trend, 26, 4) as float)+ CAST(substr(Trend, 31, 4) as float)+ CAST(substr(Trend, 36, 4) as float)+ CAST(substr(Trend, 41, 4) as float)+ CAST(substr(Trend, 46, 4) as float)+ CAST(substr(Trend, 51, 4) as float)+ CAST(substr(Trend, 56, 4) as float)) as "SumOfTrend" FROM CSVListLoop')
+
+  KeywordSearchTrendByMonth<- sqldf('SELECT *, CAST(leftstr(Trend, 4) as float)*Volume*12/TrendSum as "Jan", CAST(substr(Trend, 6, 4) as float)*Volume*12/TrendSum as "Feb", CAST(substr(Trend, 11, 4) as float)*Volume*12/TrendSum as "Mar", CAST(substr(Trend, 16, 4) as float)*Volume*12/TrendSum as "Apr", CAST(substr(Trend, 21, 4) as float)*Volume*12/TrendSum as "May", CAST(substr(Trend, 26, 4) as float)*Volume*12/TrendSum as "June", CAST(substr(Trend, 31, 4) as float)*Volume*12/TrendSum as "Jul", CAST(substr(Trend, 36, 4) as float)*Volume*12/TrendSum as "Aug", CAST(substr(Trend, 41, 4) as float)*Volume*12/TrendSum as "Sept", CAST(substr(Trend, 46, 4) as float)*Volume*12/TrendSum as "Oct", CAST(substr(Trend, 51, 4) as float)*Volume*12/TrendSum as "Nov", CAST(substr(Trend, 56, 4) as float)*Volume*12/TrendSum as "Dec" FROM FindSumOfTrend')
+
+  Grouped<-cbind(KeywordSearchTrendByMonth, CategoryName)
+
+  KeywordSearchTrendCategory <- paste(CategoryName, sep = "")
+
+  #This is if you want to group by category
+  assign(KeywordSearchTrendCategory, sqldf('SELECT CategoryName, sum(Jan) as "Jan", sum(Feb) as "Feb", sum(Mar) as "Mar", sum(Apr) as "Apr", sum(May) as "May", sum(June) as "Jun", sum(Jul) as "Jul", sum(Aug) as "Aug", sum(Sept) as "Sept", sum(Oct) as "Oct", sum(Nov) as "Nov", sum(Dec) as "Dec" FROM Grouped Group By CategoryName'))
+
+}
+
+AllTogether<- rbind(CategoryName1, CategoryName2, CategoryName3, CategoryName4)
+
+Jan<- sqldf('SELECT "01/2022" as "Month", CategoryName, Jan as "Volume" FROM AllTogether')
+Feb<- sqldf('SELECT "02/2022" as "Month", CategoryName, Feb as "Volume"FROM AllTogether')
+Mar<- sqldf('SELECT "03/2022" as "Month", CategoryName, Mar as "Volume"FROM AllTogether')
+Apr<- sqldf('SELECT "04/2022" as "Month", CategoryName, Apr as "Volume"FROM AllTogether')
+May<- sqldf('SELECT "05/2022" as "Month", CategoryName, May as "Volume"FROM AllTogether')
+Jun<- sqldf('SELECT "06/2022" as "Month", CategoryName, Jun as "Volume"FROM AllTogether')
+Jul<- sqldf('SELECT "07/2022" as "Month", CategoryName, Jul as "Volume"FROM AllTogether')
+Aug<- sqldf('SELECT "08/2022" as "Month", CategoryName, Aug as "Volume"FROM AllTogether')
+Sept<- sqldf('SELECT "09/2022" as "Month", CategoryName, Sept as "Volume"FROM AllTogether')
+Oct<- sqldf('SELECT "10/2022" as "Month", CategoryName, Oct as "Volume"FROM AllTogether')
+Nov<- sqldf('SELECT "11/2022" as "Month", CategoryName, Nov as "Volume"FROM AllTogether')
+Dec<- sqldf('SELECT "12/2022" as "Month", CategoryName, Dec as "Volume"FROM AllTogether')
+
+FinalSheet<- rbind(Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sept, Oct, Nov, Dec)
